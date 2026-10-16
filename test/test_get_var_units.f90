@@ -2,7 +2,8 @@ program test_get_var_units
 
   use bmif_3_0, only: BMI_FAILURE, BMI_MAX_UNITS_NAME
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -12,7 +13,7 @@ program test_get_var_units
   type (bmi_heat) :: m
   character (len=BMI_MAX_UNITS_NAME) :: var_units
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_var_units(var_name, var_units)
   status = m%finalize()
 

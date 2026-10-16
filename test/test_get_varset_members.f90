@@ -2,7 +2,8 @@ program test_get_varset_members
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE, BMI_MAX_VAR_NAME
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -16,7 +17,7 @@ program test_get_varset_members
   expected_input(3) = "model__identification_number"
   expected_output(1) = "plate_surface__temperature"
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
 
   status = m%get_varset_members("input", names)
   if ((status /= BMI_SUCCESS).or.(size(names) /= size(expected_input))) then

@@ -2,7 +2,8 @@ program test_get_grid_edge_nodes
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -14,7 +15,7 @@ program test_get_grid_edge_nodes
   integer, dimension(count) :: conn
   integer :: i, fail_status
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   fail_status = m%get_grid_edge_nodes(grid_id, conn)
   status = m%finalize()
 

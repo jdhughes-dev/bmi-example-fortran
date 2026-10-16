@@ -2,7 +2,8 @@ program test_update
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status, tolerance
+  use fixtures, only: config_file, status, tolerance, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -11,7 +12,7 @@ program test_update
   type (bmi_heat) :: m
   double precision :: time
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%update()
   status = m%get_current_time(time)
   status = m%finalize()

@@ -2,7 +2,8 @@ program test_get_value_at_indices
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
-  use fixtures, only: status, print_array
+  use fixtures, only: status, print_array, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -34,7 +35,8 @@ contains
 
     allocate(tval(size(indices)))
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value_at_indices(var_name, tval, indices)
     status = m%finalize()
 

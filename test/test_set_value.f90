@@ -2,7 +2,8 @@ program test_set_value
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
-  use fixtures, only: status, print_array
+  use fixtures, only: status, print_array, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -39,7 +40,8 @@ contains
     real :: x(size), y(size)
     integer :: i, code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value(var_name, x)
     x = 42.0
     status = m%set_value(var_name, x)
@@ -68,7 +70,8 @@ contains
     real :: x(size), y(size)
     integer :: i, code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value(var_name, x)
     status = m%set_value(var_name, expected)
     status = m%get_value(var_name, y)
@@ -96,7 +99,8 @@ contains
     integer :: x(size), y(size)
     integer :: i, code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value(var_name, x)
     status = m%set_value(var_name, expected)
     status = m%get_value(var_name, y)

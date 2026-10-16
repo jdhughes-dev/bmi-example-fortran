@@ -2,7 +2,8 @@ program test_get_grid_shape
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -14,7 +15,7 @@ program test_get_grid_shape
   integer, dimension(2) :: grid_shape
   integer :: i
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_grid_shape(grid_id, grid_shape)
   status = m%finalize()
 

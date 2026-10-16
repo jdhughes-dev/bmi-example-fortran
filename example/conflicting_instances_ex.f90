@@ -26,8 +26,8 @@ program conflicting_instances_ex
   write(*, "(a, a10, a10)") "Configuration files: ", cfg_file1, cfg_file2
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m1%initialize(cfg_file1)
-  s = m2%initialize(cfg_file2)
+  s = m1%initialize(cfg_file1, no_extensions, supported_extensions)
+  s = m2%initialize(cfg_file2, no_extensions, supported_extensions)
   write (*,*) "Done."
 
   s = m1%get_varset_members("output", names1)

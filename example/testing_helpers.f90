@@ -1,5 +1,13 @@
 module testing_helpers
 
+  use bmif_3_0, only: BMI_MAX_EXTENSION_NAME
+  implicit none
+
+  ! Request no extensions from initialize.
+  character (len=BMI_MAX_EXTENSION_NAME) :: no_extensions(0)
+  character (len=BMI_MAX_EXTENSION_NAME), allocatable :: &
+       supported_extensions(:)
+
 contains
 
   ! Prints a rank 1 array to the console.

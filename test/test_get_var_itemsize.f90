@@ -2,7 +2,8 @@ program test_get_var_itemsize
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -12,7 +13,7 @@ program test_get_var_itemsize
   type (bmi_heat) :: m
   integer :: item_size
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_var_itemsize(var_name, item_size)
   status = m%finalize()
 

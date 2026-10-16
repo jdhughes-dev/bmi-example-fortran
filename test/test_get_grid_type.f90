@@ -2,7 +2,8 @@ program test_get_grid_type
 
   use bmif_3_0, only: BMI_FAILURE, BMI_MAX_TYPE_NAME
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -13,7 +14,7 @@ program test_get_grid_type
   type (bmi_heat) :: m
   character (len=BMI_MAX_TYPE_NAME) :: grid_type
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_grid_type(grid_id, grid_type)
   status = m%finalize()
 

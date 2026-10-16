@@ -2,7 +2,8 @@ program test_get_value_ptr
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
-  use fixtures, only: status, print_array
+  use fixtures, only: status, print_array, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -30,7 +31,8 @@ contains
     integer :: i, j
     integer :: code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value_ptr(var_name, tref)
 
     ! Visual inspection.

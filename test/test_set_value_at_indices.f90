@@ -2,7 +2,8 @@ program test_set_value_at_indices
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
-  use fixtures, only: status, print_array
+  use fixtures, only: status, print_array, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -32,7 +33,8 @@ contains
     real :: x(size)
     integer :: i, code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%set_value_at_indices(var_name, indices, expected)
     status = m%get_value(var_name, x)
     status = m%finalize()

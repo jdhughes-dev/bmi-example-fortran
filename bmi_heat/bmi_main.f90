@@ -1,6 +1,7 @@
 ! Run the heat model through its BMI.
 program bmi_main
 
+  use bmif_3_0, only: BMI_MAX_EXTENSION_NAME
   use bmiheatf
   use, intrinsic :: iso_fortran_env, only : file_unit=>input_unit
   implicit none
@@ -15,6 +16,9 @@ program bmi_main
   integer :: i, j, s, grid_id, grid_size, grid_shape(ndims)
   double precision :: current_time, end_time
   real, allocatable :: temperature(:)
+  character (len=BMI_MAX_EXTENSION_NAME) :: no_extensions(0)
+  character (len=BMI_MAX_EXTENSION_NAME), allocatable :: &
+       supported_extensions(:)
 
   do while (arg_count <= 1)
     call get_command_argument(arg_count, arg)
@@ -32,7 +36,7 @@ program bmi_main
   open(file_unit,file=output_file)
 
   write(file_unit,"(a)") "Initialize model."
-  s = model%initialize(arg)
+  s = model%initialize(arg, no_extensions, supported_extensions)
 
   s = model%get_current_time(current_time)
   s = model%get_end_time(end_time)

@@ -2,7 +2,8 @@
 program change_diffusivity
 
   use bmiheatf
-  use testing_helpers, only: print_array
+  use testing_helpers, only: print_array, no_extensions, &
+       supported_extensions
   implicit none
 
   character (len=256) :: config_file
@@ -23,7 +24,7 @@ program change_diffusivity
   config_file = trim(config_file) // "/test1.cfg"
   
   ! Run model to the end with alpha=1.0 (from cfg file).
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_var_grid(tname, tgrid_id)
   status = m%get_grid_shape(tgrid_id, tdims)
   status = m%get_value(dname, diffusivity)
@@ -36,7 +37,7 @@ program change_diffusivity
   call print_array(temperature, tdims)
   
   ! Run model to the end with alpha=0.75.
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   diffusivity = 0.25
   status = m%set_value(dname, diffusivity)
   status = m%update_until(end_time)

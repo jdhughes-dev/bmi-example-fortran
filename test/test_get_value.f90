@@ -2,7 +2,8 @@ program test_get_value
 
   use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
-  use fixtures, only: status, print_array
+  use fixtures, only: status, print_array, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -42,7 +43,8 @@ contains
     real :: tval(size)
     integer :: i, code
 
-    status = m%initialize(trim(config_file))
+    status = m%initialize(trim(config_file), no_extensions, &
+         supported_extensions)
     status = m%get_value(var_name, tval)
     status = m%finalize()
 
@@ -71,7 +73,7 @@ contains
     real :: val(size)
     integer :: i, code
 
-    status = m%initialize(config_file)
+    status = m%initialize(config_file, no_extensions, supported_extensions)
     status = m%get_value(var_name, val)
     status = m%finalize()
 
@@ -97,7 +99,7 @@ contains
     integer :: val(size)
     integer :: i, code
 
-    status = m%initialize(config_file)
+    status = m%initialize(config_file, no_extensions, supported_extensions)
     status = m%get_value(var_name, val)
     status = m%finalize()
 

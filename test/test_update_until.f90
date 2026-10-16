@@ -2,7 +2,8 @@ program test_update_until
 
   use bmif_3_0, only: BMI_FAILURE, BMI_SUCCESS
   use bmiheatf
-  use fixtures, only: config_file, status, tolerance
+  use fixtures, only: config_file, status, tolerance, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -31,7 +32,7 @@ contains
     double precision :: time
     integer :: code
 
-    status = m%initialize(config_file)
+    status = m%initialize(config_file, no_extensions, supported_extensions)
     status = m%update_until(expected_time)
     status = m%get_current_time(time)
     status = m%finalize()
@@ -51,7 +52,7 @@ contains
     double precision :: time
     integer :: code
 
-    status = m%initialize(config_file)
+    status = m%initialize(config_file, no_extensions, supported_extensions)
     status = m%update_until(expected_time)
     status = m%get_current_time(time)
     status = m%finalize()
@@ -70,7 +71,7 @@ contains
     double precision :: time, dt, expected_time
     integer :: code
 
-    status = m%initialize(config_file)
+    status = m%initialize(config_file, no_extensions, supported_extensions)
     status = m%get_time_step(dt)
     expected_time = 3 * dt
     status = m%update_until(expected_time)

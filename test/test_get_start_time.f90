@@ -2,7 +2,8 @@ program test_get_start_time
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status
+  use fixtures, only: config_file, status, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -11,7 +12,7 @@ program test_get_start_time
   type (bmi_heat) :: m
   double precision :: start_time
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_start_time(start_time)
   status = m%finalize()
 

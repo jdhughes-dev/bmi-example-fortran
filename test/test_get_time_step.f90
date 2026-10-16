@@ -2,7 +2,8 @@ program test_get_time_step
 
   use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
-  use fixtures, only: config_file, status, tolerance
+  use fixtures, only: config_file, status, tolerance, no_extensions, &
+       supported_extensions
 
   implicit none
 
@@ -11,7 +12,7 @@ program test_get_time_step
   type (bmi_heat) :: m
   double precision :: time_step
 
-  status = m%initialize(config_file)
+  status = m%initialize(config_file, no_extensions, supported_extensions)
   status = m%get_time_step(time_step)
   status = m%finalize()
 

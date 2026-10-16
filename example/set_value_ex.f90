@@ -15,7 +15,7 @@ program set_value_ex
   character(len=30) :: rowfmt
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m%initialize("")
+  s = m%initialize("", no_extensions, supported_extensions)
   write (*,*) "Done."
 
   s = m%get_varset_members("output", names)

@@ -14,6 +14,7 @@ module bmiheatf
      procedure :: get_varset_members => heat_varset_members
      procedure :: initialize => heat_initialize
      procedure :: finalize => heat_finalize
+     procedure :: get_extension => heat_get_extension
      procedure :: get_start_time => heat_start_time
      procedure :: get_end_time => heat_end_time
      procedure :: get_current_time => heat_current_time
@@ -154,9 +155,13 @@ contains
   end function heat_varset_members
 
   ! BMI initializer.
-  function heat_initialize(this, config_file) result (bmi_status)
-    class (bmi_heat), intent(out) :: this
+  function heat_initialize(this, config_file, requested_extensions, &
+       supported_extensions) result (bmi_status)
+    class (bmi_heat), target, intent(out) :: this
     character (len=*), intent(in) :: config_file
+    character (len=*), intent(in) :: requested_extensions(:)
+    character (len=BMI_MAX_EXTENSION_NAME), allocatable, intent(out) :: &
+         supported_extensions(:)
     integer :: bmi_status
 
     if (len(config_file) > 0) then
@@ -164,8 +169,24 @@ contains
     else
        call initialize_from_defaults(this%model)
     end if
+    allocate(supported_extensions(0))
     bmi_status = BMI_SUCCESS
   end function heat_initialize
+
+  ! Get the object that implements the named extension.
+  function heat_get_extension(this, extension_name, extension_object) &
+       result (bmi_status)
+    class (bmi_heat), target, intent(in) :: this
+    character (len=*), intent(in) :: extension_name
+    class (bmi_extension), pointer, intent(out) :: extension_object
+    integer :: bmi_status
+
+    select case(extension_name)
+    case default
+       extension_object => null()
+       bmi_status = BMI_FAILURE
+    end select
+  end function heat_get_extension
 
   ! BMI finalizer.
   function heat_finalize(this) result (bmi_status)

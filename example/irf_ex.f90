@@ -3,6 +3,7 @@ program irf_test
 
   use bmif_3_0, only: BMI_MAX_UNITS_NAME
   use bmiheatf
+  use testing_helpers, only: no_extensions, supported_extensions
   implicit none
 
   type (bmi_heat) :: m
@@ -11,7 +12,7 @@ program irf_test
   character (len=BMI_MAX_UNITS_NAME) :: time_units
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m%initialize("")
+  s = m%initialize("", no_extensions, supported_extensions)
   write (*,*) "Done."
 
   s = m%get_start_time(time0)

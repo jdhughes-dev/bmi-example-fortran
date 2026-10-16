@@ -3,6 +3,7 @@ program vargrid_test
 
   use bmif_3_0, only: BMI_MAX_VAR_NAME
   use bmiheatf
+  use testing_helpers, only: no_extensions, supported_extensions
   implicit none
 
   type (bmi_heat) :: m
@@ -15,7 +16,7 @@ program vargrid_test
   integer, dimension(2) :: iarray
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m%initialize("")
+  s = m%initialize("", no_extensions, supported_extensions)
   write (*,*) "Done."
 
   s = m%get_varset_members("output", names)

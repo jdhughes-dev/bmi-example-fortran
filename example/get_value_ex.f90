@@ -15,7 +15,7 @@ program get_value_ex
   double precision :: time
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m%initialize("")
+  s = m%initialize("", no_extensions, supported_extensions)
   write (*,*) "Done."
 
   s = m%get_varset_members("output", names)
