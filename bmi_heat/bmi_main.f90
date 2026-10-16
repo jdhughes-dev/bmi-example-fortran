@@ -11,6 +11,7 @@ program bmi_main
   integer, parameter :: ndims = 2
 
   type (bmi_heat) :: model
+  integer :: var_index
   integer :: arg_count = 0
   character (len=80) :: arg
   integer :: i, j, s, grid_id, grid_size, grid_shape(ndims)
@@ -37,10 +38,11 @@ program bmi_main
 
   write(file_unit,"(a)") "Initialize model."
   s = model%initialize(arg, no_extensions, supported_extensions)
+  s = model%get_var_index(var_name, var_index)
 
   s = model%get_current_time(current_time)
   s = model%get_end_time(end_time)
-  s = model%get_var_grid(var_name, grid_id)
+  s = model%get_var_grid(var_index, grid_id)
   s = model%get_grid_size(grid_id, grid_size)
   s = model%get_grid_shape(grid_id, grid_shape)
 
@@ -48,7 +50,7 @@ program bmi_main
 
   do while (current_time <= end_time)
      write(file_unit,"(a, f6.1)") "Model values at time = ", current_time
-     s = model%get_value(var_name, temperature)
+     s = model%get_value(var_index, temperature)
      do j = 1, grid_shape(1)
         do i = 1, grid_shape(2)
            write (file_unit,"(f6.1)", advance="no") temperature(j + grid_shape(1)*(i-1))

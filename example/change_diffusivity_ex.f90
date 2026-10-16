@@ -14,6 +14,8 @@ program change_diffusivity
   double precision, parameter :: end_time = 20.d0
 
   type (bmi_heat) :: m
+  integer :: dindex
+  integer :: tindex
   integer :: tgrid_id
   integer, dimension(2) :: tdims
   real :: diffusivity(1), temperature(50)  
@@ -25,11 +27,13 @@ program change_diffusivity
   
   ! Run model to the end with alpha=1.0 (from cfg file).
   status = m%initialize(config_file, no_extensions, supported_extensions)
-  status = m%get_var_grid(tname, tgrid_id)
+  status = m%get_var_index(dname, dindex)
+  status = m%get_var_index(tname, tindex)
+  status = m%get_var_grid(tindex, tgrid_id)
   status = m%get_grid_shape(tgrid_id, tdims)
-  status = m%get_value(dname, diffusivity)
+  status = m%get_value(dindex, diffusivity)
   status = m%update_until(end_time)
-  status = m%get_value(tname, temperature)
+  status = m%get_value(tindex, temperature)
   status = m%finalize()
 
   write(*,"(a)") "Run 1"
@@ -39,9 +43,9 @@ program change_diffusivity
   ! Run model to the end with alpha=0.75.
   status = m%initialize(config_file, no_extensions, supported_extensions)
   diffusivity = 0.25
-  status = m%set_value(dname, diffusivity)
+  status = m%set_value(dindex, diffusivity)
   status = m%update_until(end_time)
-  status = m%get_value(tname, temperature)
+  status = m%get_value(tindex, temperature)
   status = m%finalize()
 
   write(*,"(a)") "Run 2"

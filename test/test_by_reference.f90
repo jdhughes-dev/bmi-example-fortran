@@ -25,6 +25,7 @@ contains
 
   function run_test() result(code)
     type (bmi_heat), target :: m
+    integer :: temperature_index
     class (bmi_extension), pointer :: ext
     character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
     integer, dimension(rank) :: shape
@@ -36,6 +37,7 @@ contains
     requested(1) = "bmi:pointers"
     status = m%initialize(trim(config_file), requested, &
          supported_extensions)
+    status = m%get_var_index("plate_surface__temperature", temperature_index)
     status = m%get_grid_shape(grid_id, shape)
     status = m%get_grid_size(grid_id, size)
 
@@ -43,11 +45,11 @@ contains
     allocate(tval(size))
 
     ! Get initial temperature array, by value and by reference.
-    status = m%get_value("plate_surface__temperature", tval)
+    status = m%get_value(temperature_index, tval)
     status = m%get_extension("bmi:pointers", ext)
     select type (ext)
     class is (bmi_pointers)
-       status = ext%get_value_ptr_float("plate_surface__temperature", tref)
+       status = ext%get_value_ptr_float(temperature_index, tref)
     class default
        code = BMI_FAILURE
        return

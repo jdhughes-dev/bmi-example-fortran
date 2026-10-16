@@ -35,6 +35,7 @@ contains
   function test1() result(code)
     character (len=*), parameter :: &
          var_name = "plate_surface__temperature"
+    integer :: var_index
     integer, parameter :: rank = 2
     integer, parameter :: size = 50
     integer, parameter, dimension(rank) :: shape = (/ 10, 5 /)
@@ -45,7 +46,8 @@ contains
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%get_value(var_name, tval)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, tval)
     status = m%finalize()
 
     ! Visual inspection.
@@ -68,13 +70,15 @@ contains
   function test2() result(code)
     character (len=*), parameter :: &
          var_name = "plate_surface__thermal_diffusivity"
+    integer :: var_index
     integer, parameter :: size = 1
     real, parameter :: expected(size) = (/ 1.0 /)
     real :: val(size)
     integer :: i, code
 
     status = m%initialize(config_file, no_extensions, supported_extensions)
-    status = m%get_value(var_name, val)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, val)
     status = m%finalize()
 
     ! Visual inspection.
@@ -94,13 +98,15 @@ contains
   function test3() result(code)
     character (len=*), parameter :: &
          var_name = "model__identification_number"
+    integer :: var_index
     integer, parameter :: size = 1
     integer, parameter :: expected(size) = (/ 0 /)
     integer :: val(size)
     integer :: i, code
 
     status = m%initialize(config_file, no_extensions, supported_extensions)
-    status = m%get_value(var_name, val)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, val)
     status = m%finalize()
 
     ! Visual inspection.

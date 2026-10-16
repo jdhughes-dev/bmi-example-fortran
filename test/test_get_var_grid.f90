@@ -11,10 +11,12 @@ program test_get_var_grid
   integer, parameter :: expected_id = 0
 
   type (bmi_heat) :: m
+  integer :: var_index
   integer :: grid_id
 
   status = m%initialize(config_file, no_extensions, supported_extensions)
-  status = m%get_var_grid(var_name, grid_id)
+  status = m%get_var_index(var_name, var_index)
+  status = m%get_var_grid(var_index, grid_id)
   status = m%finalize()
 
   if (grid_id.ne.expected_id) then

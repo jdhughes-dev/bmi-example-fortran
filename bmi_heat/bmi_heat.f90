@@ -32,6 +32,7 @@ module bmiheatf
      procedure :: get_time_units => heat_time_units
      procedure :: update => heat_update
      procedure :: update_until => heat_update_until
+     procedure :: get_var_index => heat_var_index
      procedure :: get_var_grid => heat_var_grid
      procedure :: get_grid_type => heat_grid_type
      procedure :: get_grid_rank => heat_grid_rank
@@ -103,6 +104,19 @@ module bmiheatf
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(output_item_count) :: &
        output_items = (/'plate_surface__temperature'/)
+
+  ! Variable indices; they need not be ordered or contiguous.
+  integer, parameter :: TEMPERATURE_INDEX = 1
+  integer, parameter :: DIFFUSIVITY_INDEX = 2
+  integer, parameter :: ID_INDEX = 3
+  integer, parameter :: var_count = 3
+  character (len=BMI_MAX_VAR_NAME), parameter :: &
+       var_names(var_count) = [character (len=BMI_MAX_VAR_NAME) :: &
+       'plate_surface__temperature', &
+       'plate_surface__thermal_diffusivity', &
+       'model__identification_number']
+  integer, parameter :: var_indices(var_count) = &
+       [TEMPERATURE_INDEX, DIFFUSIVITY_INDEX, ID_INDEX]
 
   ! Variables in the bmi:pointers sets
   integer, parameter :: stable_ptr_item_count = 1
@@ -319,21 +333,40 @@ contains
     bmi_status = BMI_SUCCESS
   end function heat_update_until
 
-  ! Get the grid id for a particular variable.
-  function heat_var_grid(this, name, grid) result (bmi_status)
+  ! Get the index of the named variable.
+  function heat_var_index(this, name, index) result (bmi_status)
     class (bmi_heat), intent(in) :: this
     character (len=*), intent(in) :: name
+    integer, intent(out) :: index
+    integer :: bmi_status
+    integer :: i
+
+    index = -1
+    bmi_status = BMI_FAILURE
+    do i = 1, var_count
+       if (name == var_names(i)) then
+          index = var_indices(i)
+          bmi_status = BMI_SUCCESS
+          exit
+       end if
+    end do
+  end function heat_var_index
+
+  ! Get the grid id for a particular variable.
+  function heat_var_grid(this, index, grid) result (bmi_status)
+    class (bmi_heat), intent(in) :: this
+    integer, intent(in) :: index
     integer, intent(out) :: grid
     integer :: bmi_status
 
-    select case(name)
-    case('plate_surface__temperature')
+    select case(index)
+    case(TEMPERATURE_INDEX)
        grid = 0
        bmi_status = BMI_SUCCESS
-    case('plate_surface__thermal_diffusivity')
+    case(DIFFUSIVITY_INDEX)
        grid = 1
        bmi_status = BMI_SUCCESS
-    case('model__identification_number')
+    case(ID_INDEX)
        grid = 1
        bmi_status = BMI_SUCCESS
     case default
@@ -587,20 +620,20 @@ contains
   end function heat_grid_nodes_per_face
 
   ! The data type of the variable, as a string.
-  function heat_var_type(this, name, type) result (bmi_status)
+  function heat_var_type(this, index, type) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     character (len=*), intent(out) :: type
     integer :: bmi_status
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        type = "real"
        bmi_status = BMI_SUCCESS
-    case("plate_surface__thermal_diffusivity")
+    case(DIFFUSIVITY_INDEX)
        type = "real"
        bmi_status = BMI_SUCCESS
-    case("model__identification_number")
+    case(ID_INDEX)
        type = "integer"
        bmi_status = BMI_SUCCESS
     case default
@@ -610,20 +643,20 @@ contains
   end function heat_var_type
 
   ! The units of the given variable.
-  function heat_var_units(this, name, units) result (bmi_status)
+  function heat_var_units(this, index, units) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     character (len=*), intent(out) :: units
     integer :: bmi_status
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        units = "K"
        bmi_status = BMI_SUCCESS
-    case("plate_surface__thermal_diffusivity")
+    case(DIFFUSIVITY_INDEX)
        units = "m2 s-1"
        bmi_status = BMI_SUCCESS
-    case("model__identification_number")
+    case(ID_INDEX)
        units = "1"
        bmi_status = BMI_SUCCESS
     case default
@@ -633,20 +666,20 @@ contains
   end function heat_var_units
 
   ! Memory use per array element.
-  function heat_var_itemsize(this, name, size) result (bmi_status)
+  function heat_var_itemsize(this, index, size) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(out) :: size
     integer :: bmi_status
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        size = sizeof(this%model%temperature(1,1))  ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
-    case("plate_surface__thermal_diffusivity")
+    case(DIFFUSIVITY_INDEX)
        size = sizeof(this%model%alpha)             ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
-    case("model__identification_number")
+    case(ID_INDEX)
        size = sizeof(this%model%id)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
@@ -656,16 +689,16 @@ contains
   end function heat_var_itemsize
 
   ! The size of the given variable.
-  function heat_var_nbytes(this, name, nbytes) result (bmi_status)
+  function heat_var_nbytes(this, index, nbytes) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(out) :: nbytes
     integer :: bmi_status
     integer :: s1, s2, s3, grid, grid_size, item_size
 
-    s1 = this%get_var_grid(name, grid)
+    s1 = this%get_var_grid(index, grid)
     s2 = this%get_grid_size(grid, grid_size)
-    s3 = this%get_var_itemsize(name, item_size)
+    s3 = this%get_var_itemsize(index, item_size)
 
     if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
        nbytes = item_size * grid_size
@@ -677,13 +710,13 @@ contains
   end function heat_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
-  function heat_var_location(this, name, location) result (bmi_status)
+  function heat_var_location(this, index, location) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     character (len=*), intent(out) :: location
     integer :: bmi_status
 
-    select case(name)
+    select case(index)
     case default
        location = "node"
        bmi_status = BMI_SUCCESS
@@ -691,14 +724,14 @@ contains
   end function heat_var_location
 
   ! Get a copy of a integer variable's values, flattened.
-  function heat_get_int(this, name, dest) result (bmi_status)
+  function heat_get_int(this, index, dest) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(inout) :: dest(:)
     integer :: bmi_status
 
-    select case(name)
-    case("model__identification_number")
+    select case(index)
+    case(ID_INDEX)
        dest = [this%model%id]
        bmi_status = BMI_SUCCESS
     case default
@@ -708,14 +741,14 @@ contains
   end function heat_get_int
 
   ! Get a copy of a real variable's values, flattened.
-  function heat_get_float(this, name, dest) result (bmi_status)
+  function heat_get_float(this, index, dest) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     real, intent(inout) :: dest(:)
     integer :: bmi_status
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        ! This would be safe, but subject to indexing errors.
        ! do j = 1, this%model%n_y
        !    do i = 1, this%model%n_x
@@ -728,7 +761,7 @@ contains
        ! See https://stackoverflow.com/a/11800068/1563298
        dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y])
        bmi_status = BMI_SUCCESS
-    case("plate_surface__thermal_diffusivity")
+    case(DIFFUSIVITY_INDEX)
        dest = [this%model%alpha]
        bmi_status = BMI_SUCCESS
     case default
@@ -738,13 +771,13 @@ contains
   end function heat_get_float
 
   ! Get a copy of a double variable's values, flattened.
-  function heat_get_double(this, name, dest) result (bmi_status)
+  function heat_get_double(this, index, dest) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     double precision, intent(inout) :: dest(:)
     integer :: bmi_status
 
-    select case(name)
+    select case(index)
     case default
        dest(:) = -1.d0
        bmi_status = BMI_FAILURE
@@ -752,31 +785,31 @@ contains
   end function heat_get_double
 
   ! Get a reference to an integer-valued variable, flattened.
-  function heat_get_ptr_int(this, name, dest_ptr) result (bmi_status)
+  function heat_get_ptr_int(this, index, dest_ptr) result (bmi_status)
     class (heat_pointers), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
     type (c_ptr) :: src
     integer :: n_elements
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_get_ptr_int
 
   ! Get a reference to a real-valued variable, flattened.
-  function heat_get_ptr_float(this, name, dest_ptr) result (bmi_status)
+  function heat_get_ptr_float(this, index, dest_ptr) result (bmi_status)
     class (heat_pointers), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     real, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
     type (c_ptr) :: src
     integer :: n_elements
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        src = c_loc(this%model%temperature(1,1))
        n_elements = this%model%n_y * this%model%n_x
        call c_f_pointer(src, dest_ptr, [n_elements])
@@ -787,25 +820,25 @@ contains
   end function heat_get_ptr_float
 
   ! Get a reference to an double-valued variable, flattened.
-  function heat_get_ptr_double(this, name, dest_ptr) result (bmi_status)
+  function heat_get_ptr_double(this, index, dest_ptr) result (bmi_status)
     class (heat_pointers), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     double precision, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
     type (c_ptr) :: src
     integer :: n_elements
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_get_ptr_double
 
   ! Get values of an integer variable at the given locations.
-  function heat_get_at_indices_int(this, name, dest, inds) &
+  function heat_get_at_indices_int(this, index, dest, inds) &
        result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(inout) :: dest(:)
     integer, intent(in) :: inds(:)
     integer :: bmi_status
@@ -813,17 +846,17 @@ contains
     integer, pointer :: src_flattened(:)
     integer :: i, n_elements
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_get_at_indices_int
 
   ! Get values of a real variable at the given locations.
-  function heat_get_at_indices_float(this, name, dest, inds) &
+  function heat_get_at_indices_float(this, index, dest, inds) &
        result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     real, intent(inout) :: dest(:)
     integer, intent(in) :: inds(:)
     integer :: bmi_status
@@ -831,8 +864,8 @@ contains
     real, pointer :: src_flattened(:)
     integer :: i, n_elements
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        src = c_loc(this%model%temperature(1,1))
        call c_f_pointer(src, src_flattened, [this%model%n_y * this%model%n_x])
        n_elements = size(inds)
@@ -846,10 +879,10 @@ contains
   end function heat_get_at_indices_float
 
   ! Get values of a double variable at the given locations.
-  function heat_get_at_indices_double(this, name, dest, inds) &
+  function heat_get_at_indices_double(this, index, dest, inds) &
        result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     double precision, intent(inout) :: dest(:)
     integer, intent(in) :: inds(:)
     integer :: bmi_status
@@ -857,21 +890,21 @@ contains
     double precision, pointer :: src_flattened(:)
     integer :: i, n_elements
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_get_at_indices_double
 
   ! Set new integer values.
-  function heat_set_int(this, name, src) result (bmi_status)
+  function heat_set_int(this, index, src) result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(in) :: src(:)
     integer :: bmi_status
 
-    select case(name)
-    case("model__identification_number")
+    select case(index)
+    case(ID_INDEX)
        this%model%id = src(1)
        bmi_status = BMI_SUCCESS
     case default
@@ -880,17 +913,17 @@ contains
   end function heat_set_int
 
   ! Set new real values.
-  function heat_set_float(this, name, src) result (bmi_status)
+  function heat_set_float(this, index, src) result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     real, intent(in) :: src(:)
     integer :: bmi_status
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
        bmi_status = BMI_SUCCESS
-    case("plate_surface__thermal_diffusivity")
+    case(DIFFUSIVITY_INDEX)
        this%model%alpha = src(1)
        bmi_status = BMI_SUCCESS
     case default
@@ -899,23 +932,23 @@ contains
   end function heat_set_float
 
   ! Set new double values.
-  function heat_set_double(this, name, src) result (bmi_status)
+  function heat_set_double(this, index, src) result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     double precision, intent(in) :: src(:)
     integer :: bmi_status
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_set_double
 
   ! Set integer values at particular locations.
-  function heat_set_at_indices_int(this, name, inds, src) &
+  function heat_set_at_indices_int(this, index, inds, src) &
        result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(in) :: inds(:)
     integer, intent(in) :: src(:)
     integer :: bmi_status
@@ -923,17 +956,17 @@ contains
     integer, pointer :: dest_flattened(:)
     integer :: i
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select
   end function heat_set_at_indices_int
 
   ! Set real values at particular locations.
-  function heat_set_at_indices_float(this, name, inds, src) &
+  function heat_set_at_indices_float(this, index, inds, src) &
        result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(in) :: inds(:)
     real, intent(in) :: src(:)
     integer :: bmi_status
@@ -941,8 +974,8 @@ contains
     real, pointer :: dest_flattened(:)
     integer :: i
 
-    select case(name)
-    case("plate_surface__temperature")
+    select case(index)
+    case(TEMPERATURE_INDEX)
        dest = c_loc(this%model%temperature(1,1))
        call c_f_pointer(dest, dest_flattened, [this%model%n_y * this%model%n_x])
        do i = 1, size(inds)
@@ -955,10 +988,10 @@ contains
   end function heat_set_at_indices_float
 
   ! Set double values at particular locations.
-  function heat_set_at_indices_double(this, name, inds, src) &
+  function heat_set_at_indices_double(this, index, inds, src) &
        result (bmi_status)
     class (bmi_heat), intent(inout) :: this
-    character (len=*), intent(in) :: name
+    integer, intent(in) :: index
     integer, intent(in) :: inds(:)
     double precision, intent(in) :: src(:)
     integer :: bmi_status
@@ -966,7 +999,7 @@ contains
     double precision, pointer :: dest_flattened(:)
     integer :: i
 
-    select case(name)
+    select case(index)
     case default
        bmi_status = BMI_FAILURE
     end select

@@ -30,13 +30,15 @@ contains
 
   function run_test() result(code)
     type (bmi_heat) :: m
+    integer :: var_index
     real :: x(size)
     integer :: i, code
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%set_value_at_indices(var_name, indices, expected)
-    status = m%get_value(var_name, x)
+    status = m%get_var_index(var_name, var_index)
+    status = m%set_value_at_indices(var_index, indices, expected)
+    status = m%get_value(var_index, x)
     status = m%finalize()
 
     ! Visual inspection.

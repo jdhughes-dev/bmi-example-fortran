@@ -11,7 +11,7 @@ program extension_ex
   type (bmi_heat), target :: m
   class (bmi_extension), pointer :: ext
   character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
-  integer :: s, i, j, grid_id, dims(2)
+  integer :: s, i, j, temperature_index, grid_id, dims(2)
   real, pointer :: temperature(:)
   double precision :: time
 
@@ -24,6 +24,7 @@ program extension_ex
   if (size(supported_extensions) /= 1) then
      stop 1
   end if
+  s = m%get_var_index("plate_surface__temperature", temperature_index)
 
   s = m%get_extension("bmi:pointers", ext)
   if (s /= BMI_SUCCESS) then
@@ -33,12 +34,12 @@ program extension_ex
   ! The caller needs only the abstract bmi_pointers type, not heat_pointers.
   select type (ext)
   class is (bmi_pointers)
-     s = ext%get_value_ptr_float("plate_surface__temperature", temperature)
+     s = ext%get_value_ptr_float(temperature_index, temperature)
   class default
      stop 3
   end select
 
-  s = m%get_var_grid("plate_surface__temperature", grid_id)
+  s = m%get_var_grid(temperature_index, grid_id)
   s = m%get_grid_shape(grid_id, dims)
 
   ! The pointer tracks the model state across updates.

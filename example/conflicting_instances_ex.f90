@@ -8,6 +8,7 @@ program conflicting_instances_ex
 
   type (bmi_heat) :: m1
   type (bmi_heat) :: m2
+  integer :: index1, index2
   character (len=256) :: cfg_dir
   character (len=BMI_MAX_VAR_NAME) :: &
        cfg_file1 = "test1.cfg", cfg_file2 = "test2.cfg"
@@ -31,44 +32,46 @@ program conflicting_instances_ex
   write (*,*) "Done."
 
   s = m1%get_varset_members("output", names1)
-  s = m1%get_var_grid(names1(1), grid_id1)
+  s = m1%get_var_index(names1(1), index1)
+  s = m1%get_var_grid(index1, grid_id1)
   s = m1%get_grid_shape(grid_id1, dims1)
   s = m1%get_grid_size(grid_id1, grid_size1)
   write(rowfmt1,'(a,i4,a)') '(', dims1(2), '(1x,f6.1))'
 
   write (*, "(a)") "Initial values, model 1:"
   allocate(z1(grid_size1))
-  s = m1%get_value("plate_surface__temperature", z1)
+  s = m1%get_value(index1, z1)
   call print_array(z1, dims1)
 
   s = m2%get_varset_members("output", names2)
-  s = m2%get_var_grid(names2(1), grid_id2)
+  s = m2%get_var_index(names2(1), index2)
+  s = m2%get_var_grid(index2, grid_id2)
   s = m2%get_grid_shape(grid_id2, dims2)
   s = m2%get_grid_size(grid_id2, grid_size2)
   write(rowfmt2,'(a,i4,a)') '(', dims2(2), '(1x,f6.1))'
 
   write (*, "(a)") "Initial values, model 2:"
   allocate(z2(grid_size2))
-  s = m2%get_value("plate_surface__temperature", z2)
+  s = m2%get_value(index2, z2)
   call print_array(z2, dims2)
 
   write (*, "(a)") "Set new value in model 2; does it affect model 1?"
-  s = m2%set_value_at_indices("plate_surface__temperature", [20], [42.0])
+  s = m2%set_value_at_indices(index2, [20], [42.0])
   write (*, "(a)") "New values, model 2:"
-  s = m2%get_value("plate_surface__temperature", z2)
+  s = m2%get_value(index2, z2)
   call print_array(z2, dims2)
   write (*, "(a)") "New values, model 1:"
-  s = m1%get_value("plate_surface__temperature", z1)
+  s = m1%get_value(index1, z1)
   call print_array(z1, dims1)
 
   write (*, "(a)") "Update both models by one time step..."
   s = m1%update()
   s = m2%update()
   write (*, "(a)") "Updated values, model 1:"
-  s = m1%get_value("plate_surface__temperature", z1)
+  s = m1%get_value(index1, z1)
   call print_array(z1, dims1)
   write (*, "(a)") "Updated values, model 2:"
-  s = m2%get_value("plate_surface__temperature", z2)
+  s = m2%get_value(index2, z2)
   call print_array(z2, dims2)
 
   write (*,"(a)", advance="no") "Finalizing..."

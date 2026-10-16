@@ -8,6 +8,8 @@ program get_value_ex
   implicit none
 
   type (bmi_heat), target :: m
+  integer :: temperature_index
+  integer :: var_index
   class (bmi_extension), pointer :: ext
   character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
   integer :: s, i, j, grid_id
@@ -20,12 +22,14 @@ program get_value_ex
   write (*,"(a)",advance="no") "Initializing..."
   requested(1) = "bmi:pointers"
   s = m%initialize("", requested, supported_extensions)
+  s = m%get_var_index("plate_surface__temperature", temperature_index)
   write (*,*) "Done."
 
   s = m%get_varset_members("output", names)
   write (*,"(a, a)") "Output variables: ", names
 
-  s = m%get_var_grid(names(1), grid_id)
+  s = m%get_var_index(names(1), var_index)
+  s = m%get_var_grid(var_index, grid_id)
   s = m%get_grid_shape(grid_id, dims)
   write(*,'(a,2i4)') 'Grid shape (ny,nx): ', dims
   s = m%get_grid_size(grid_id, grid_size)
@@ -33,14 +37,14 @@ program get_value_ex
 
   write (*, "(a)") "Initial values:"
   allocate(z(grid_size))
-  s = m%get_value("plate_surface__temperature", z)
+  s = m%get_value(temperature_index, z)
   call print_array(z, dims)
   write (*, "(a, i5)") "Shape of returned values:", shape(z)
 
   write (*,"(a)") "Running (using get_value)..."
   do j = 1, 4
      s = m%update()
-     s = m%get_value("plate_surface__temperature", z)
+     s = m%get_value(temperature_index, z)
      s = m%get_current_time(time)
      write (*,"(a, f6.1)") "Current time:", time
      call print_array(z, dims)
@@ -51,14 +55,14 @@ program get_value_ex
   locations = [21, 41, 62]
   write (*,*) "Locations: ", locations
   allocate(y(size(locations)))
-  s = m%get_value_at_indices("plate_surface__temperature", y, locations)
+  s = m%get_value_at_indices(temperature_index, y, locations)
   write (*,*) "Values: ", y
 
   write (*,"(a)") "Running (using get_value_ptr)..."
   s = m%get_extension("bmi:pointers", ext)
   select type (ext)
   class is (bmi_pointers)
-     s = ext%get_value_ptr_float("plate_surface__temperature", x)
+     s = ext%get_value_ptr_float(temperature_index, x)
   class default
      stop 1
   end select
@@ -73,7 +77,7 @@ program get_value_ex
   write (*, "(a)") "Values at three locations:"
   locations = [21, 41, 62]
   write (*,*) "Locations: ", locations
-  s = m%get_value_at_indices("plate_surface__temperature", y, locations)
+  s = m%get_value_at_indices(temperature_index, y, locations)
   write (*,*) "Values: ", y
 
   write (*,"(a)", advance="no") "Finalizing..."

@@ -7,6 +7,7 @@ program vargrid_test
   implicit none
 
   type (bmi_heat) :: m
+  integer :: var_index
   integer :: s, i
   character (len=BMI_MAX_VAR_NAME), pointer :: names(:)
   integer :: grid_id
@@ -25,7 +26,8 @@ program vargrid_test
      write (*,"(a30, 1x, a)") "-", names(i)
   end do
 
-  s = m%get_var_grid(names(1), grid_id)
+  s = m%get_var_index(names(1), var_index)
+  s = m%get_var_grid(var_index, grid_id)
   write (*,"(a30, i3)") "Grid id:", grid_id
 
   s = m%get_grid_type(grid_id, astring)
@@ -41,13 +43,13 @@ program vargrid_test
   s = m%get_grid_spacing(grid_id, darray)
   write (*,"(a30, 1x, 2(f8.2))") "Grid spacing:", darray
 
-  s = m%get_var_itemsize(names(1), asize)
+  s = m%get_var_itemsize(var_index, asize)
   write (*,"(a30, i8, 1x, a)") "Item size:", asize, "bytes"
-  s = m%get_var_nbytes(names(1), asize)
+  s = m%get_var_nbytes(var_index, asize)
   write (*,"(a30, i8, 1x, a)") "Variable size:", asize, "bytes"
-  s = m%get_var_type(names(1), astring)
+  s = m%get_var_type(var_index, astring)
   write (*,"(a30, 1x, a30)") "Variable type:", astring
-  s = m%get_var_units(names(1), astring)
+  s = m%get_var_units(var_index, astring)
   write (*,"(a30, 1x, a30)") "Variable units:", astring
 
   write (*,"(a)", advance="no") "Finalizing..."

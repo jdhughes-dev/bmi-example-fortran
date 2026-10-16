@@ -34,6 +34,7 @@ contains
   function test1() result(code)
     character (len=*), parameter :: &
          var_name = "plate_surface__temperature"
+    integer :: var_index
     integer, parameter :: rank = 2
     integer, parameter :: size = 50
     integer, parameter :: shape(rank) = (/ 10, 5 /)
@@ -42,10 +43,11 @@ contains
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%get_value(var_name, x)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, x)
     x = 42.0
-    status = m%set_value(var_name, x)
-    status = m%get_value(var_name, y)
+    status = m%set_value(var_index, x)
+    status = m%get_value(var_index, y)
     status = m%finalize()
 
     ! Visual inspection.
@@ -65,6 +67,7 @@ contains
   function test2() result(code)
     character (len=*), parameter :: &
          var_name = "plate_surface__thermal_diffusivity"
+    integer :: var_index
     integer, parameter :: size = 1
     real, parameter :: expected(size) = (/ 0.75 /)
     real :: x(size), y(size)
@@ -72,9 +75,10 @@ contains
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%get_value(var_name, x)
-    status = m%set_value(var_name, expected)
-    status = m%get_value(var_name, y)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, x)
+    status = m%set_value(var_index, expected)
+    status = m%get_value(var_index, y)
     status = m%finalize()
 
     ! Visual inspection.
@@ -94,6 +98,7 @@ contains
   function test3() result(code)
     character (len=*), parameter :: &
          var_name = "model__identification_number"
+    integer :: var_index
     integer, parameter :: size = 1
     integer, parameter :: expected(size) = (/ 42 /)
     integer :: x(size), y(size)
@@ -101,9 +106,10 @@ contains
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%get_value(var_name, x)
-    status = m%set_value(var_name, expected)
-    status = m%get_value(var_name, y)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value(var_index, x)
+    status = m%set_value(var_index, expected)
+    status = m%get_value(var_index, y)
     status = m%finalize()
 
     ! Visual inspection.

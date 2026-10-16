@@ -11,10 +11,12 @@ program test_get_var_type
   character (len=*), parameter :: expected_type = "real"
 
   type (bmi_heat) :: m
+  integer :: var_index
   character (len=BMI_MAX_TYPE_NAME) :: var_type
 
   status = m%initialize(config_file, no_extensions, supported_extensions)
-  status = m%get_var_type(var_name, var_type)
+  status = m%get_var_index(var_name, var_index)
+  status = m%get_var_type(var_index, var_type)
   status = m%finalize()
 
   if (var_type.ne.expected_type) then

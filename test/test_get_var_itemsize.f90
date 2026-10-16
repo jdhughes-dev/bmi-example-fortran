@@ -11,10 +11,12 @@ program test_get_var_itemsize
   integer, parameter :: expected_size = 4
 
   type (bmi_heat) :: m
+  integer :: var_index
   integer :: item_size
 
   status = m%initialize(config_file, no_extensions, supported_extensions)
-  status = m%get_var_itemsize(var_name, item_size)
+  status = m%get_var_index(var_name, var_index)
+  status = m%get_var_itemsize(var_index, item_size)
   status = m%finalize()
 
   if (item_size.ne.expected_size) then

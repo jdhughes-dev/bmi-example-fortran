@@ -29,6 +29,7 @@ contains
 
   function run_test() result(code)
     type (bmi_heat) :: m
+    integer :: var_index
     real, allocatable :: tval(:)
     integer :: i
     integer :: code
@@ -37,7 +38,8 @@ contains
 
     status = m%initialize(trim(config_file), no_extensions, &
          supported_extensions)
-    status = m%get_value_at_indices(var_name, tval, indices)
+    status = m%get_var_index(var_name, var_index)
+    status = m%get_value_at_indices(var_index, tval, indices)
     status = m%finalize()
 
     ! Visual inspection.

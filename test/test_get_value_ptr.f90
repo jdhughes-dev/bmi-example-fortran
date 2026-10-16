@@ -27,6 +27,7 @@ contains
 
   function run_test() result(code)
     type (bmi_heat), target :: m
+    integer :: var_index
     class (bmi_extension), pointer :: ext
     character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
     real, pointer :: tref(:)
@@ -36,10 +37,11 @@ contains
     requested(1) = "bmi:pointers"
     status = m%initialize(trim(config_file), requested, &
          supported_extensions)
+    status = m%get_var_index(var_name, var_index)
     status = m%get_extension("bmi:pointers", ext)
     select type (ext)
     class is (bmi_pointers)
-       status = ext%get_value_ptr_float(var_name, tref)
+       status = ext%get_value_ptr_float(var_index, tref)
     class default
        code = BMI_FAILURE
        return

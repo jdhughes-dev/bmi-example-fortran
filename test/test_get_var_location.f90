@@ -11,10 +11,12 @@ program test_get_var_location
   character (len=*), parameter :: expected_location = "node"
 
   type (bmi_heat) :: m
+  integer :: var_index
   character (len=BMI_MAX_UNITS_NAME) :: location
 
   status = m%initialize(config_file, no_extensions, supported_extensions)
-  status = m%get_var_location(var_name, location)
+  status = m%get_var_index(var_name, var_index)
+  status = m%get_var_location(var_index, location)
   status = m%finalize()
 
   print *, location
