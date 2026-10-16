@@ -1,6 +1,6 @@
 program test_get_time_units
 
-  use bmif_2_0, only: BMI_FAILURE, BMI_MAX_UNITS_NAME
+  use bmif_3_0, only: BMI_FAILURE, BMI_MAX_UNITS_NAME
   use bmiheatf
   use fixtures, only: config_file, status
 

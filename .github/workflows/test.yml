@@ -35,7 +35,20 @@ jobs:
             cmake
             pkg-config
             fortran-compiler
-            bmi-fortran
+
+      - name: Checkout bmi-fortran
+        uses: actions/checkout@v4
+        with:
+          repository: jdhughes-dev/bmi-fortran
+          ref: bmi-3
+          path: bmi-fortran
+
+      - name: Build and install bmi-fortran
+        run: |
+          cmake -S bmi-fortran -B bmi-fortran/${{ env.BUILD_DIR }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+          cmake --build bmi-fortran/${{ env.BUILD_DIR }} --target install --config ${{ matrix.build-type }}
 
       - name: Configure project
         run: |
@@ -93,13 +106,24 @@ jobs:
             pkg-config
             cxx-compiler
             fortran-compiler
-            bmi-fortran
           init-shell: >-
             powershell
 
       - name: Set the FC environment variable to the Fortran conda compiler
         run: |
           echo "FC=$env:CONDA_PREFIX\Library\bin\flang-new.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Checkout bmi-fortran
+        uses: actions/checkout@v4
+        with:
+          repository: jdhughes-dev/bmi-fortran
+          ref: bmi-3
+          path: bmi-fortran
+
+      - name: Build and install bmi-fortran
+        run: |
+          cmake -S bmi-fortran -B bmi-fortran/${{ env.BUILD_DIR }} -G Ninja -DCMAKE_INSTALL_PREFIX="${{ env.LIBRARY_PREFIX }}" -DCMAKE_BUILD_TYPE=Release
+          cmake --build bmi-fortran/${{ env.BUILD_DIR }} --target install --config Release
 
       - name: List current environment variables
         run: |

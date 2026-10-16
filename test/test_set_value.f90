@@ -1,6 +1,6 @@
 program test_set_value
 
-  use bmif_2_0, only: BMI_SUCCESS, BMI_FAILURE
+  use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
   use bmiheatf
   use fixtures, only: status, print_array
 

@@ -1,6 +1,6 @@
 program test_get_time_step
 
-  use bmif_2_0, only: BMI_FAILURE
+  use bmif_3_0, only: BMI_FAILURE
   use bmiheatf
   use fixtures, only: config_file, status, tolerance
 

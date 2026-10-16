@@ -1,7 +1,7 @@
 module bmiheatf
 
   use heatf
-  use bmif_2_0
+  use bmif_3_0
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   implicit none
 

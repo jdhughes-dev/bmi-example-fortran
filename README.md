@@ -73,7 +73,7 @@ The installation will look like
 |   |-- run_bmiheatf
 |   `-- run_heatf
 |-- include
-|   |-- bmif_2_0.mod
+|   |-- bmif_3_0.mod
 |   |-- bmiheatf.mod
 |   `-- heatf.mod
 `-- lib

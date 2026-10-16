@@ -21,4 +21,4 @@ auto-tests = true
 
 [dependencies]
 heatf = { path = "heat" }
-bmif = { git = "https://github.com/csdms/bmi-fortran" }
+bmif = { git = "https://github.com/jdhughes-dev/bmi-fortran", branch = "bmi-3" }
