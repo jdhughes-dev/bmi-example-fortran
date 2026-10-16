@@ -61,7 +61,7 @@ program bmi_main
      s = model%get_current_time(current_time)
   end do
 
-  deallocate(temperature)
+  deallocate(temperature, supported_extensions)
   s = model%finalize()
   write(file_unit,"(a)") "Finalize model."
 
