@@ -25,6 +25,16 @@ program test_get_varset_member_count
      stop 2
   end if
 
+  status = m%get_varset_member_count("bmi:pointers:stable", count)
+  if ((status /= BMI_SUCCESS).or.(count /= 1)) then
+     stop 4
+  end if
+
+  status = m%get_varset_member_count("bmi:pointers:transient", count)
+  if ((status /= BMI_SUCCESS).or.(count /= 0)) then
+     stop 5
+  end if
+
   status = m%get_varset_member_count("not_a_set", count)
   if (status /= BMI_FAILURE) then
      stop 3

@@ -1,9 +1,9 @@
 program test_by_reference
 
-  use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE
+  use bmif_3_0, only: BMI_SUCCESS, BMI_FAILURE, BMI_MAX_EXTENSION_NAME, &
+       bmi_extension, bmi_pointers
   use bmiheatf
-  use fixtures, only: status, print_array, no_extensions, &
-       supported_extensions
+  use fixtures, only: status, print_array, supported_extensions
 
   implicit none
 
@@ -24,14 +24,17 @@ program test_by_reference
 contains
 
   function run_test() result(code)
-    type (bmi_heat) :: m
+    type (bmi_heat), target :: m
+    class (bmi_extension), pointer :: ext
+    character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
     integer, dimension(rank) :: shape
     integer :: size
     real, allocatable :: tval(:)
     real, pointer :: tref(:)
     integer :: code
 
-    status = m%initialize(trim(config_file), no_extensions, &
+    requested(1) = "bmi:pointers"
+    status = m%initialize(trim(config_file), requested, &
          supported_extensions)
     status = m%get_grid_shape(grid_id, shape)
     status = m%get_grid_size(grid_id, size)
@@ -41,7 +44,14 @@ contains
 
     ! Get initial temperature array, by value and by reference.
     status = m%get_value("plate_surface__temperature", tval)
-    status = m%get_value_ptr("plate_surface__temperature", tref)
+    status = m%get_extension("bmi:pointers", ext)
+    select type (ext)
+    class is (bmi_pointers)
+       status = ext%get_value_ptr_float("plate_surface__temperature", tref)
+    class default
+       code = BMI_FAILURE
+       return
+    end select
     write (*, "(a)") "Time = 0 (by value):"
     call print_array(tval, shape)
     write (*, "(a)") "Time = 0 (by reference):"

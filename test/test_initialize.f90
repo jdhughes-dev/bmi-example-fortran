@@ -33,6 +33,20 @@ program test_initialize
      stop 2
   end if
 
+  ! A bmi:pointers request is reported as supported.
+  requested(1) = "bmi:pointers"
+  status3 = m%initialize(config_file1, requested, supported_extensions)
+  status = m%finalize()
+  if (status3.ne.BMI_SUCCESS) then
+     stop 6
+  end if
+  if (size(supported_extensions).ne.1) then
+     stop 7
+  end if
+  if (supported_extensions(1).ne."bmi:pointers") then
+     stop 8
+  end if
+
   ! An unknown extension is not reported as supported.
   requested(1) = "not_an_extension"
   status3 = m%initialize(config_file1, requested, supported_extensions)

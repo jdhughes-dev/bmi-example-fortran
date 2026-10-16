@@ -1,12 +1,15 @@
 ! Test the get_value, get_value_ptr, and get_value_at_indices functions.
 program get_value_ex
 
-  use bmif_3_0, only: BMI_MAX_VAR_NAME
+  use bmif_3_0, only: BMI_MAX_VAR_NAME, BMI_MAX_EXTENSION_NAME, &
+       bmi_extension, bmi_pointers
   use bmiheatf
   use testing_helpers
   implicit none
 
-  type (bmi_heat) :: m
+  type (bmi_heat), target :: m
+  class (bmi_extension), pointer :: ext
+  character (len=BMI_MAX_EXTENSION_NAME) :: requested(1)
   integer :: s, i, j, grid_id
   character (len=BMI_MAX_VAR_NAME), pointer :: names(:)
   integer :: grid_size, dims(2), locations(3)
@@ -15,7 +18,8 @@ program get_value_ex
   double precision :: time
 
   write (*,"(a)",advance="no") "Initializing..."
-  s = m%initialize("", no_extensions, supported_extensions)
+  requested(1) = "bmi:pointers"
+  s = m%initialize("", requested, supported_extensions)
   write (*,*) "Done."
 
   s = m%get_varset_members("output", names)
@@ -51,7 +55,13 @@ program get_value_ex
   write (*,*) "Values: ", y
 
   write (*,"(a)") "Running (using get_value_ptr)..."
-  s = m%get_value_ptr("plate_surface__temperature", x)
+  s = m%get_extension("bmi:pointers", ext)
+  select type (ext)
+  class is (bmi_pointers)
+     s = ext%get_value_ptr_float("plate_surface__temperature", x)
+  class default
+     stop 1
+  end select
   do j = 1, 4
      s = m%update()
      s = m%get_current_time(time)

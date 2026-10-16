@@ -5,9 +5,19 @@ module bmiheatf
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   implicit none
 
+  ! Extension object for bmi:pointers.
+  type, extends (bmi_pointers) :: heat_pointers
+     type (heat_model), pointer :: model => null()
+   contains
+     procedure :: get_value_ptr_int => heat_get_ptr_int
+     procedure :: get_value_ptr_float => heat_get_ptr_float
+     procedure :: get_value_ptr_double => heat_get_ptr_double
+  end type heat_pointers
+
   type, extends (bmi) :: bmi_heat
      private
      type (heat_model) :: model
+     type (heat_pointers) :: pointers
    contains
      procedure :: get_component_name => heat_component_name
      procedure :: get_varset_member_count => heat_varset_member_count
@@ -51,13 +61,6 @@ module bmiheatf
           get_value_int, &
           get_value_float, &
           get_value_double
-     procedure :: get_value_ptr_int => heat_get_ptr_int
-     procedure :: get_value_ptr_float => heat_get_ptr_float
-     procedure :: get_value_ptr_double => heat_get_ptr_double
-     generic :: get_value_ptr => &
-          get_value_ptr_int, &
-          get_value_ptr_float, &
-          get_value_ptr_double
      procedure :: get_value_at_indices_int => heat_get_at_indices_int
      procedure :: get_value_at_indices_float => heat_get_at_indices_float
      procedure :: get_value_at_indices_double => heat_get_at_indices_double
@@ -101,6 +104,15 @@ module bmiheatf
        dimension(output_item_count) :: &
        output_items = (/'plate_surface__temperature'/)
 
+  ! Variables in the bmi:pointers sets
+  integer, parameter :: stable_ptr_item_count = 1
+  integer, parameter :: transient_ptr_item_count = 0
+  character (len=BMI_MAX_VAR_NAME), target, &
+       dimension(stable_ptr_item_count) :: &
+       stable_ptr_items = (/'plate_surface__temperature'/)
+  character (len=BMI_MAX_VAR_NAME), target, &
+       dimension(transient_ptr_item_count) :: transient_ptr_items
+
 contains
 
   ! Get the name of the model.
@@ -128,6 +140,12 @@ contains
     case("output")
        count = output_item_count
        bmi_status = BMI_SUCCESS
+    case("bmi:pointers:stable")
+       count = stable_ptr_item_count
+       bmi_status = BMI_SUCCESS
+    case("bmi:pointers:transient")
+       count = transient_ptr_item_count
+       bmi_status = BMI_SUCCESS
     case default
        count = -1
        bmi_status = BMI_FAILURE
@@ -148,6 +166,12 @@ contains
     case("output")
        names => output_items
        bmi_status = BMI_SUCCESS
+    case("bmi:pointers:stable")
+       names => stable_ptr_items
+       bmi_status = BMI_SUCCESS
+    case("bmi:pointers:transient")
+       names => transient_ptr_items
+       bmi_status = BMI_SUCCESS
     case default
        names => null()
        bmi_status = BMI_FAILURE
@@ -163,13 +187,27 @@ contains
     character (len=BMI_MAX_EXTENSION_NAME), allocatable, intent(out) :: &
          supported_extensions(:)
     integer :: bmi_status
+    integer :: i, n
 
     if (len(config_file) > 0) then
        call initialize_from_file(this%model, config_file)
     else
        call initialize_from_defaults(this%model)
     end if
-    allocate(supported_extensions(0))
+
+    ! get_extension cannot modify this, so the extension is wired here.
+    this%pointers%model => this%model
+
+    n = 0
+    do i = 1, size(requested_extensions)
+       if (requested_extensions(i) == "bmi:pointers") then
+          n = 1
+       end if
+    end do
+    allocate(supported_extensions(n))
+    if (n > 0) then
+       supported_extensions(1) = "bmi:pointers"
+    end if
     bmi_status = BMI_SUCCESS
   end function heat_initialize
 
@@ -182,6 +220,9 @@ contains
     integer :: bmi_status
 
     select case(extension_name)
+    case("bmi:pointers")
+       extension_object => this%pointers
+       bmi_status = BMI_SUCCESS
     case default
        extension_object => null()
        bmi_status = BMI_FAILURE
@@ -712,7 +753,7 @@ contains
 
   ! Get a reference to an integer-valued variable, flattened.
   function heat_get_ptr_int(this, name, dest_ptr) result (bmi_status)
-    class (bmi_heat), intent(in) :: this
+    class (heat_pointers), intent(in) :: this
     character (len=*), intent(in) :: name
     integer, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
@@ -727,7 +768,7 @@ contains
 
   ! Get a reference to a real-valued variable, flattened.
   function heat_get_ptr_float(this, name, dest_ptr) result (bmi_status)
-    class (bmi_heat), intent(in) :: this
+    class (heat_pointers), intent(in) :: this
     character (len=*), intent(in) :: name
     real, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
@@ -747,7 +788,7 @@ contains
 
   ! Get a reference to an double-valued variable, flattened.
   function heat_get_ptr_double(this, name, dest_ptr) result (bmi_status)
-    class (bmi_heat), intent(in) :: this
+    class (heat_pointers), intent(in) :: this
     character (len=*), intent(in) :: name
     double precision, pointer, intent(inout) :: dest_ptr(:)
     integer :: bmi_status
