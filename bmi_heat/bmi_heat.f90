@@ -10,10 +10,8 @@ module bmiheatf
      type (heat_model) :: model
    contains
      procedure :: get_component_name => heat_component_name
-     procedure :: get_input_item_count => heat_input_item_count
-     procedure :: get_output_item_count => heat_output_item_count
-     procedure :: get_input_var_names => heat_input_var_names
-     procedure :: get_output_var_names => heat_output_var_names
+     procedure :: get_varset_member_count => heat_varset_member_count
+     procedure :: get_varset_members => heat_varset_members
      procedure :: initialize => heat_initialize
      procedure :: finalize => heat_finalize
      procedure :: get_start_time => heat_start_time
@@ -93,7 +91,11 @@ module bmiheatf
   integer, parameter :: input_item_count = 3
   integer, parameter :: output_item_count = 1
   character (len=BMI_MAX_VAR_NAME), target, &
-       dimension(input_item_count) :: input_items
+       dimension(input_item_count) :: &
+       input_items = [character (len=BMI_MAX_VAR_NAME) :: &
+       'plate_surface__temperature', &
+       'plate_surface__thermal_diffusivity', &
+       'model__identification_number']
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(output_item_count) :: &
        output_items = (/'plate_surface__temperature'/)
@@ -110,49 +112,46 @@ contains
     bmi_status = BMI_SUCCESS
   end function heat_component_name
 
-  ! Count the input variables.
-  function heat_input_item_count(this, count) result (bmi_status)
+  ! Count the variables in the named set.
+  function heat_varset_member_count(this, set_name, count) &
+       result (bmi_status)
     class (bmi_heat), intent(in) :: this
+    character (len=*), intent(in) :: set_name
     integer, intent(out) :: count
     integer :: bmi_status
 
-    count = input_item_count
-    bmi_status = BMI_SUCCESS
-  end function heat_input_item_count
+    select case(set_name)
+    case("input")
+       count = input_item_count
+       bmi_status = BMI_SUCCESS
+    case("output")
+       count = output_item_count
+       bmi_status = BMI_SUCCESS
+    case default
+       count = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function heat_varset_member_count
 
-  ! Count the output variables.
-  function heat_output_item_count(this, count) result (bmi_status)
+  ! List the variables in the named set.
+  function heat_varset_members(this, set_name, names) result (bmi_status)
     class (bmi_heat), intent(in) :: this
-    integer, intent(out) :: count
-    integer :: bmi_status
-
-    count = output_item_count
-    bmi_status = BMI_SUCCESS
-  end function heat_output_item_count
-
-  ! List input variables.
-  function heat_input_var_names(this, names) result (bmi_status)
-    class (bmi_heat), intent(in) :: this
+    character (len=*), intent(in) :: set_name
     character (*), pointer, intent(out) :: names(:)
     integer :: bmi_status
 
-    input_items(1) = 'plate_surface__temperature'
-    input_items(2) = 'plate_surface__thermal_diffusivity'
-    input_items(3) = 'model__identification_number'
-
-    names => input_items
-    bmi_status = BMI_SUCCESS
-  end function heat_input_var_names
-
-  ! List output variables.
-  function heat_output_var_names(this, names) result (bmi_status)
-    class (bmi_heat), intent(in) :: this
-    character (*), pointer, intent(out) :: names(:)
-    integer :: bmi_status
-
-    names => output_items
-    bmi_status = BMI_SUCCESS
-  end function heat_output_var_names
+    select case(set_name)
+    case("input")
+       names => input_items
+       bmi_status = BMI_SUCCESS
+    case("output")
+       names => output_items
+       bmi_status = BMI_SUCCESS
+    case default
+       names => null()
+       bmi_status = BMI_FAILURE
+    end select
+  end function heat_varset_members
 
   ! BMI initializer.
   function heat_initialize(this, config_file) result (bmi_status)

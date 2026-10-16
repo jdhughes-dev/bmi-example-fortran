@@ -18,7 +18,7 @@ program vargrid_test
   s = m%initialize("")
   write (*,*) "Done."
 
-  s = m%get_output_var_names(names)
+  s = m%get_varset_members("output", names)
   write (*,"(a30)") "Output variables:"
   do i = 1, size(names)
      write (*,"(a30, 1x, a)") "-", names(i)

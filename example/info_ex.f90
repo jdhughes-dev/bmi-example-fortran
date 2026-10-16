@@ -15,12 +15,12 @@ program info_test
   s = m%get_component_name(name)
   write (*,"(a30, a30)") "Component name: ", name
 
-  s = m%get_input_var_names(names)
+  s = m%get_varset_members("input", names)
   write (*,"(a30)") "Input variables: "
   do i = 1, size(names)
      write (*,"(a30, a40)") "- ", names(i)
   end do
-  s = m%get_output_var_names(names)
+  s = m%get_varset_members("output", names)
   write (*,"(a30, a30)") "Output variables: ", names
 
 end program info_test

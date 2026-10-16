@@ -30,7 +30,7 @@ program conflicting_instances_ex
   s = m2%initialize(cfg_file2)
   write (*,*) "Done."
 
-  s = m1%get_output_var_names(names1)
+  s = m1%get_varset_members("output", names1)
   s = m1%get_var_grid(names1(1), grid_id1)
   s = m1%get_grid_shape(grid_id1, dims1)
   s = m1%get_grid_size(grid_id1, grid_size1)
@@ -41,7 +41,7 @@ program conflicting_instances_ex
   s = m1%get_value("plate_surface__temperature", z1)
   call print_array(z1, dims1)
 
-  s = m2%get_output_var_names(names2)
+  s = m2%get_varset_members("output", names2)
   s = m2%get_var_grid(names2(1), grid_id2)
   s = m2%get_grid_shape(grid_id2, dims2)
   s = m2%get_grid_size(grid_id2, grid_size2)

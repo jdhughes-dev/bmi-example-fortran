@@ -18,7 +18,7 @@ program set_value_ex
   s = m%initialize("")
   write (*,*) "Done."
 
-  s = m%get_output_var_names(names)
+  s = m%get_varset_members("output", names)
   write (*,"(a, a)") "Output variables: ", names
 
   s = m%get_var_grid(names(1), grid_id)
