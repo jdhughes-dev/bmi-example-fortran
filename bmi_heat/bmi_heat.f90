@@ -18,6 +18,7 @@ module bmiheatf
      private
      type (heat_model) :: model
      type (heat_pointers) :: pointers
+     logical :: pointers_enabled = .false.
    contains
      procedure :: get_component_name => heat_component_name
      procedure :: get_varset_member_count => heat_varset_member_count
@@ -222,10 +223,11 @@ contains
     if (n > 0) then
        supported_extensions(1) = "bmi:pointers"
     end if
+    this%pointers_enabled = n > 0
     bmi_status = BMI_SUCCESS
   end function heat_initialize
 
-  ! Get the object that implements the named extension.
+  ! Get the object that implements a negotiated extension.
   function heat_get_extension(this, extension_name, extension_object) &
        result (bmi_status)
     class (bmi_heat), target, intent(in) :: this
@@ -233,13 +235,14 @@ contains
     class (bmi_extension), pointer, intent(out) :: extension_object
     integer :: bmi_status
 
+    extension_object => null()
+    bmi_status = BMI_FAILURE
     select case(extension_name)
     case("bmi:pointers")
-       extension_object => this%pointers
-       bmi_status = BMI_SUCCESS
-    case default
-       extension_object => null()
-       bmi_status = BMI_FAILURE
+       if (this%pointers_enabled) then
+          extension_object => this%pointers
+          bmi_status = BMI_SUCCESS
+       end if
     end select
   end function heat_get_extension
 
@@ -248,6 +251,7 @@ contains
     class (bmi_heat), intent(inout) :: this
     integer :: bmi_status
 
+    this%pointers_enabled = .false.
     call cleanup(this%model)
     bmi_status = BMI_SUCCESS
   end function heat_finalize
